@@ -1,55 +1,51 @@
 module.exports = (sequelize: any) => {
   const { DataTypes } = require("sequelize");
   return sequelize.define(
-    "orders",
+    "users_companies",
     {
-      idOrder: {
+      id: {
         autoIncrement: true,
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
       },
-      quantity: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-      },
-      idProduct: {
+      id_company: {
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
-          model: "products",
-          key: "idProduct",
+          model: "companies",
+          key: "id",
         },
       },
-      id_invoice: {
+      id_user: {
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
-          model: "invoices",
+          model: "users",
           key: "id",
         },
       },
     },
     {
       sequelize,
-      tableName: "orders",
+      tableName: "users_companies",
       timestamps: false,
       indexes: [
         {
           name: "PRIMARY",
           unique: true,
           using: "BTREE",
-          fields: [{ name: "idOrder" }],
+          fields: [{ name: "id" }],
         },
         {
-          name: "fk_products_orders",
+          name: "fk_companies_users_user",
           using: "BTREE",
-          fields: [{ name: "idProduct" }],
+          fields: [{ name: "id_user" }],
         },
         {
-          name: "fk_order_invoice",
+          name: "fk_companies_users_companies",
           using: "BTREE",
-          fields: [{ name: "id_invoice" }],
+          fields: [{ name: "id_company" }],
         },
       ],
     }

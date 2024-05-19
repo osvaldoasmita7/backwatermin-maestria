@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Login, Register } from "../controllers/auth";
+import { Login, Register, RenewToken } from "../controllers/auth";
 import { loginRule } from "../rules/rules";
 
 const bodyParser = require("body-parser");
@@ -15,6 +15,13 @@ const router = Router();
  * Iniciar sesión
  * POST: api/login
  */
+router.post(
+  "/login/renew",
+  jsonParser,
+  validationModels,
+  loginRule,
+  RenewToken
+);
 router.post("/login", jsonParser, validationModels, loginRule, Login);
 router.post("/register", jsonParser, validationModels, loginRule, Register);
 

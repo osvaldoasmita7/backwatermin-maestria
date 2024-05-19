@@ -7,7 +7,8 @@ import { CreateUser, GetAllUsers } from "../middlewares/auth.middleware";
 // Importamos interfaces
 import { usersAttributes } from "../interfaces";
 // Importamos helpers
-import { generateToken } from "../helpers/JWT";
+import { generateToken, renewToken, verifyJWT2 } from "../helpers/JWT";
+import { getUserCompany } from "../middlewares/companies.middleware";
 
 /**
  * Función para iniciar sesión
@@ -39,13 +40,22 @@ export const Login = async (req: Request, res: Response) => {
         msg: "Tu cuenta se encuentra inhabilitada",
       });
     }
+    user.companies = [];
+    if (user.type_id === 2 && user.id) {
+      const companies = await getUserCompany(user.id);
+      for (const item of companies) {
+        user.companies?.push(item.dataValues.id_company_company.dataValues);
+      }
+    }
     // Generamos el token
     const token = await generateToken(
       user.id || 0,
       user.username || "",
       user.type_id || 0,
-      user.active || 0
+      user.active || 0,
+      user.companies
     );
+
     // Retornamos la respuesta
     return res.json({
       ok: true,
@@ -55,10 +65,10 @@ export const Login = async (req: Request, res: Response) => {
         type_id: user.type_id,
         token,
         active: user.active,
+        companies: user.companies,
       },
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       ok: false,
       msg: "Ha ocurrido un error, hable con el administrador",
@@ -66,7 +76,12 @@ export const Login = async (req: Request, res: Response) => {
     });
   }
 };
-
+/**
+ * Función para registrar un usuario
+ * @param req
+ * @param res
+ * @returns
+ */
 export const Register = async (req: Request, res: Response) => {
   try {
     // Extraemos parametros del body
@@ -121,7 +136,25 @@ export const Register = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Ha ocurrido un error, hable con el administrador",
+      error,
+    });
+  }
+};
+
+export const RenewToken = async (req: Request, res: Response) => {
+  try {
+    // Extraemos parametros del body
+    const _token = req.header("token");
+    // Validamos el token
+    const { ok, id } = verifyJWT2(_token);
+    // Renovamos el token si hay id
+    if (!ok) throw "No se pudo generar el token";
+    // Generamos el token y lo regresamos
+    return res.json(await renewToken(id || 0));
+  } catch (error) {
     res.status(500).json({
       ok: false,
       msg: "Ha ocurrido un error, hable con el administrador",

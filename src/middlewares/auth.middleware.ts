@@ -1,5 +1,6 @@
 import { initModels } from "../models/db/init-models";
 import { sequelizeConn } from "../connection/sequelizedb";
+import { usersAttributes } from "../interfaces";
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
@@ -31,4 +32,14 @@ export const CreateUser = async ({
     active,
     password,
   });
+};
+
+export const GetUserById = async (id: number): Promise<usersAttributes> => {
+  try {
+    const user: usersAttributes = await users.findOne({ where: { id } });
+    if (!user) throw "No se encontró el usuario";
+    return user;
+  } catch (error) {
+    throw error;
+  }
 };

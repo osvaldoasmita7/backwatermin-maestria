@@ -1,4 +1,6 @@
 import { authRoutes } from "../routes/auth";
+import { companiesRoutes } from "../routes/companies";
+import { invoicesRoutes } from "../routes/invoice";
 import { Sockets } from "./sockets";
 
 //Servidor de express
@@ -51,10 +53,11 @@ export class ServerServer {
      * APIEndpoints
      */
     this.app.use("/api/auth", authRoutes);
-    // // Usuarios
-    // this.app.use("/api/users", require("../router/user"));
-    // //Cedis
-    // this.app.use("/api/cedis", require("../router/cedis"));
+    // Pedidos
+    this.app.use("/api/invoices", invoicesRoutes);
+
+    //Empresas
+    this.app.use("/api/companies", companiesRoutes);
     // //Users Cedis
     // this.app.use("/api/users-cedis/", require("../router/users_cedis"));
     // //viajes
