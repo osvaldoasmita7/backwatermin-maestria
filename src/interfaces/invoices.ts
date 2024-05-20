@@ -6,6 +6,7 @@ export interface invoicesAttributes {
   createdBy?: number;
   created_by?: number;
   idStatus?: number;
+  id_status?: number;
   id_company?: number;
 
   name?: string;

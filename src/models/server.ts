@@ -1,6 +1,8 @@
 import { authRoutes } from "../routes/auth";
 import { companiesRoutes } from "../routes/companies";
 import { invoicesRoutes } from "../routes/invoice";
+import { postalCodesRoutes } from "../routes/postalCodes";
+import { productsRoutes } from "../routes/products";
 import { Sockets } from "./sockets";
 
 //Servidor de express
@@ -58,8 +60,11 @@ export class ServerServer {
 
     //Empresas
     this.app.use("/api/companies", companiesRoutes);
-    // //Users Cedis
-    // this.app.use("/api/users-cedis/", require("../router/users_cedis"));
+    //Código postal
+    this.app.use("/api/postal-codes/", postalCodesRoutes);
+    //Users Cedis
+    this.app.use("/api/products/", productsRoutes);
+
     // //viajes
     // this.app.use("/api/viajes", require("../router/viaje"));
     // //choferes

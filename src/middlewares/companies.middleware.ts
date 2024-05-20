@@ -1,10 +1,13 @@
 import { initModels } from "../models/db/init-models";
 import { sequelizeConn } from "../connection/sequelizedb";
+import { companiesAttributes } from "../interfaces";
 const { companies, users_companies } = initModels(sequelizeConn);
 
-export const getCompanies = async () => {
+export const getCompanies = async (filter: companiesAttributes) => {
   try {
-    return await companies.findAll();
+    let where = {};
+    if (filter.postalCode) where = { ...where, postalCode: filter.postalCode };
+    return await companies.findAll({ where });
   } catch (error) {
     throw error;
   }

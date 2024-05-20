@@ -4,6 +4,7 @@ import {
   createInvoice,
   getInvoice,
   getInvoices,
+  getLastInvoice,
   updateInvoice,
 } from "../middlewares/invoices.middleware";
 // Importamos middlewares
@@ -65,8 +66,9 @@ export const GetInvoice = async (req: Request, res: Response) => {
  */
 export const CreateInvoice = async (req: Request, res: Response) => {
   try {
-    const invoice = req.body;
-    const resp = await createInvoice(invoice);
+    const invoice = req.body.invoice;
+    const orders = req.body.orders;
+    const resp = await createInvoice(invoice, orders);
     // Retornamos la respuesta
     return res.json({
       ok: true,
@@ -76,7 +78,8 @@ export const CreateInvoice = async (req: Request, res: Response) => {
     res.status(500).json({
       ok: false,
       msg: "Ha ocurrido un error, hable con el administrador",
-      error,
+      // @ts-ignore
+      error: error?.message,
     });
   }
 };
@@ -101,6 +104,24 @@ export const UpdateInvoice = async (req: Request, res: Response) => {
       ok: false,
       msg: "Ha ocurrido un error, hable con el administrador",
       error,
+    });
+  }
+};
+export const GetLastInvoice = async (req: Request, res: Response) => {
+  try {
+    const invoice = req.query;
+    const resp = await getLastInvoice(invoice);
+    // Retornamos la respuesta
+    return res.json({
+      ok: true,
+      ...resp,
+    });
+  } catch (error) {
+    // @ts-ignore
+    return res.status(error.status || 500).json({
+      ok: false,
+      // @ts-ignore
+      msg: error?.message,
     });
   }
 };

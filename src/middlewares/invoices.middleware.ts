@@ -1,17 +1,30 @@
-import { invoicesAttributes } from "../interfaces";
+import { invoicesAttributes, ordersAttributes } from "../interfaces";
 import { initModels } from "../models/db/init-models";
 import { sequelizeConn } from "../connection/sequelizedb";
-const Sequelize = require("sequelize");
-const Op = Sequelize.Op;
 const { invoices, companies, orders, products, status } =
   initModels(sequelizeConn);
 
-export const createInvoice = async (invoice: invoicesAttributes) => {
+export const createInvoice = async (
+  invoice: invoicesAttributes,
+  _orders?: ordersAttributes[]
+) => {
   try {
+    let respOrders = null;
+    invoice.id_status = 1;
+    invoice.date = new Date().toDateString();
+    invoice.time = new Date().toTimeString();
     const resp = await invoices.create(invoice);
     if (!resp) throw new Error("No se pudo crear el pedido, intenta más tarde");
+    if (_orders) {
+      for (const order of _orders) {
+        order.id_invoice = resp.id;
+      }
+      respOrders = await orders.bulkCreate(_orders);
+    }
+    resp.dataValues.orders = respOrders;
     return resp.dataValues;
   } catch (error) {
+    console.log("Error", error);
     throw error;
   }
 };
@@ -96,7 +109,48 @@ export const getInvoice = async (id: number) => {
         },
       ],
     });
-    if (!resp) throw new Error("{status:400, msg:'No se encontró el pedido'}");
+    if (!resp)
+      throw new Error("{status:400, message:'No se encontró el pedido'}");
+    return resp.dataValues;
+  } catch (error) {
+    throw error;
+  }
+};
+export const getLastInvoice = async (invoice: invoicesAttributes) => {
+  try {
+    let where = {};
+    if (invoice.city) where = { ...where, city: invoice.city };
+    if (invoice.cologne) where = { ...where, cologne: invoice.cologne };
+    if (invoice.createdBy) where = { ...where, createdBy: invoice.createdBy };
+    if (invoice.date) where = { ...where, date: invoice.date };
+    if (invoice.delegation)
+      where = { ...where, delegation: invoice.delegation };
+    if (invoice.exterior) where = { ...where, exterior: invoice.exterior };
+    if (invoice.id) where = { ...where, id: invoice.id };
+    if (invoice.idStatus) where = { ...where, idStatus: invoice.idStatus };
+    if (invoice.interior) where = { ...where, interior: invoice.interior };
+    if (invoice.name) where = { ...where, name: invoice.name };
+    if (invoice.postalcode)
+      where = { ...where, postalcode: invoice.postalcode };
+    if (invoice.street) where = { ...where, street: invoice.street };
+    if (invoice.time) where = { ...where, time: invoice.time };
+    if (invoice.total) where = { ...where, total: invoice.total };
+    if (invoice.created_by)
+      where = { ...where, created_by: invoice.created_by };
+    if (invoice.id_company)
+      where = { ...where, id_company: invoice.id_company };
+    const resp = await invoices.findOne({
+      where,
+      include: [
+        {
+          model: orders,
+          as: "orders",
+          required: false,
+        },
+      ],
+      order: [["id", "desc"]],
+    });
+    if (!resp) throw { status: 404, message: "No se encontró el pedido" };
     return resp.dataValues;
   } catch (error) {
     throw error;

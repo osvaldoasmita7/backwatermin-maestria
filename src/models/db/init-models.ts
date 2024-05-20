@@ -2,6 +2,7 @@ const DataTypes = require("sequelize").DataTypes;
 const _companies = require("./companies");
 const _invoices = require("./invoices");
 const _orders = require("./orders");
+const _postal_codes = require("./postal_codes");
 const _products = require("./products");
 const _status = require("./status");
 const _user_types = require("./user_types");
@@ -12,6 +13,7 @@ export function initModels(sequelize: any) {
   const companies = _companies(sequelize, DataTypes);
   const invoices = _invoices(sequelize, DataTypes);
   const orders = _orders(sequelize, DataTypes);
+  const postal_codes = _postal_codes(sequelize, DataTypes);
   const products = _products(sequelize, DataTypes);
   const status = _status(sequelize, DataTypes);
   const user_types = _user_types(sequelize, DataTypes);
@@ -71,6 +73,7 @@ export function initModels(sequelize: any) {
     companies,
     invoices,
     orders,
+    postal_codes,
     products,
     status,
     user_types,

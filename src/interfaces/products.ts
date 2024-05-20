@@ -4,5 +4,5 @@ export interface productsAttributes {
   image?: string;
   size?: string;
   price?: string;
-  idCompany?: number;
+  id__company?: number;
 }

@@ -1,6 +1,7 @@
 // Importamos dependencias
 import { Request, Response } from "express";
 import { getCompanies } from "../middlewares/companies.middleware";
+import { getAllProducts } from "../middlewares/products.middleware";
 
 /**
  * Función para traer todos los pedidos
@@ -8,14 +9,14 @@ import { getCompanies } from "../middlewares/companies.middleware";
  * @param res
  * @returns
  */
-export const getAllCompanies = async (req: Request, res: Response) => {
+export const GetAllProducts = async (req: Request, res: Response) => {
   try {
     const filter = req.query;
-    const companies = await getCompanies(filter);
+    const products = await getAllProducts(filter);
     // Retornamos la respuesta
     return res.json({
       ok: true,
-      companies,
+      products,
     });
   } catch (error) {
     res.status(500).json({

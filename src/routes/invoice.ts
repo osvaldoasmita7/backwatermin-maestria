@@ -3,6 +3,7 @@ import {
   CreateInvoice,
   GetAllInvoice,
   GetInvoice,
+  GetLastInvoice,
   UpdateInvoice,
 } from "../controllers/invoice";
 
@@ -19,6 +20,8 @@ const router = Router();
  * Peridos
  * POST: api/invoices
  */
+router.get("/last-invoice", jsonParser, validationModels, GetLastInvoice);
+
 router.get("/:id", jsonParser, validationModels, GetInvoice);
 router.get("/", jsonParser, validationModels, GetAllInvoice);
 router.post("/", jsonParser, validationModels, CreateInvoice);

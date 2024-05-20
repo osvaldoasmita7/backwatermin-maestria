@@ -1,43 +1,56 @@
 import { Socket } from "socket.io";
-
+import { initModels } from "./db/init-models";
+import { sequelizeConn } from "../connection/sequelizedb";
+import { companiesAttributes } from "../interfaces";
+const { companies } = initModels(sequelizeConn);
 export class Sockets {
   io;
+  _companies: companiesAttributes[] = [];
   constructor(io: any) {
     this.io = io;
-    this.socketEvents();
+    this.getCompanies();
   }
+  getCompanies = async () => {
+    this._companies = await companies.findAll();
+    this.socketEvents();
+  };
   socketEvents() {
+    console.log(this._companies);
     //   On connection
     this.io.on("connection", async (socket: Socket) => {
-      // console.log("Ok, alguien se conectó");
-      // socket.on("my_company_1", async () => {
-      //   socket.join("my_company_1");
-      //   // this.io.emit("conected_to_room", {
-      //   //   // console.log("Conectado 212");
-      //   //   ok: true,
-      //   //   message: "Connected",
-      //   // });
-      //   // socket.emit("conected_to_room", () => {
-      //   //   console.log("Conectado 21");
-      //   //   return { ok: true, message: "Connected" };
-      //   // });
-      //   // this.io.to("conected_to_room").emit("conected_to_room", () => {
-      //   //   console.log("Conectado 3");
-      //   //   return { ok: true, message: "Connected" };
-      //   // });
-      // });
-
       this.io.emit("conected_to_room", "Hola desde el back");
+      //  Creamos las salas
+
+      for (const company of this._companies) {
+        socket.on(`my_company_${company!.id}`, (payload: any) => {
+          console.log(payload);
+        });
+      }
+      socket.on(`my_company_1`, (payload: any) => {
+        console.log(payload);
+      });
+      this.io.on(`my_company_1`, (payload: any) => {
+        console.log(payload);
+      });
+      this.io.on(
+        this._companies.map((company) => `my_company_${company.id}`),
+        (payload: any) => {
+          console.log(payload);
+        }
+      );
+    });
+    //  Creamos las salas
+    this.io.on(
+      this._companies.map((company) => `my_company_${company.id}`),
+      (payload: any) => {
+        console.log(payload);
+      }
+    );
+    this.io.on(`my_company_1`, (payload: any) => {
+      console.log(payload);
     });
     this.io.on("disconnect", async (socket: Socket) => {
       // console.log("Ok, alguien se desconectó");
     });
-    // this.io.on("my_company_1", async (socket: Socket) => {
-    //   socket.emit("conected_to_room", () => {
-    //     console.log("Conectado 2");
-    //     return { ok: true, message: "Connected" };
-    //   });
-    //   // console.log("Ok, alguien se desconectó");
-    // });
   }
 }
