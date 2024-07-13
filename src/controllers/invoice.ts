@@ -2,6 +2,7 @@
 import { Request, Response } from "express";
 import {
   createInvoice,
+  getCompaniesRegistered,
   getInvoice,
   getInvoices,
   getLastInvoice,
@@ -68,6 +69,8 @@ export const CreateInvoice = async (req: Request, res: Response) => {
   try {
     const invoice = req.body.invoice;
     const orders = req.body.orders;
+    console.log("Orden", orders);
+    console.log("invoice", invoice);
     const resp = await createInvoice(invoice, orders);
     // Retornamos la respuesta
     return res.json({
@@ -115,6 +118,25 @@ export const GetLastInvoice = async (req: Request, res: Response) => {
     return res.json({
       ok: true,
       ...resp,
+    });
+  } catch (error) {
+    // @ts-ignore
+    return res.status(error.status || 500).json({
+      ok: false,
+      // @ts-ignore
+      msg: error?.message,
+    });
+  }
+};
+
+export const getAllCompaniesByUserId = async (req: Request, res: Response) => {
+  try {
+    const user_id = req.params.user_id as string;
+    const resp = await getCompaniesRegistered(user_id);
+    // Retornamos la respuesta
+    return res.json({
+      ok: true,
+      companies: resp,
     });
   } catch (error) {
     // @ts-ignore

@@ -1,4 +1,6 @@
-const DataTypes = require("sequelize").DataTypes;
+import { DataTypes } from "sequelize";
+
+// const DataTypes = require("sequelize").DataTypes;
 const _companies = require("./companies");
 const _invoices = require("./invoices");
 const _orders = require("./orders");

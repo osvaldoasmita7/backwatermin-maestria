@@ -1,7 +1,9 @@
 export interface ordersAttributes {
   idOrder?: number;
-  quantity?: string;
+  quantity: number;
   idProduct?: number;
   price?: number;
   id_invoice?: number;
+  quantity_disccount: number;
+  redeemed?: 0 | 1;
 }

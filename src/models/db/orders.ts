@@ -33,6 +33,15 @@ module.exports = (sequelize: any) => {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: true,
       },
+      quantity_disccount: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      redeemed: {
+        type: DataTypes.TINYINT,
+        allowNull: true,
+        defaultValue: 0,
+      },
     },
     {
       sequelize,

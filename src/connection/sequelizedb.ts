@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
 export const sequelizeConn = new Sequelize(
-  "waterdb",
+  "waterdb1",
   "root",
   "",
   {

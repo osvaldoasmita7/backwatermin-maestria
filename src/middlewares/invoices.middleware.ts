@@ -1,4 +1,8 @@
-import { invoicesAttributes, ordersAttributes } from "../interfaces";
+import {
+  companiesAttributes,
+  invoicesAttributes,
+  ordersAttributes,
+} from "../interfaces";
 import { initModels } from "../models/db/init-models";
 import { sequelizeConn } from "../connection/sequelizedb";
 const { invoices, companies, orders, products, status } =
@@ -6,25 +10,115 @@ const { invoices, companies, orders, products, status } =
 
 export const createInvoice = async (
   invoice: invoicesAttributes,
-  _orders?: ordersAttributes[]
+  _orders: ordersAttributes[] = []
 ) => {
   try {
-    let respOrders = null;
     invoice.id_status = 1;
     invoice.date = new Date().toDateString();
     invoice.time = new Date().toTimeString();
+    let notRedeemed = 0;
+    // let { notRedeemed, orders } = await getOrdersNotRemeeded(
+    //   invoice.created_by || 0
+    // );
+    for (const item of _orders) {
+      invoice.total = (invoice.total || 0) + item.quantity * (item.price || 1);
+      notRedeemed = notRedeemed + item.quantity;
+    }
+    let toDisccount = Math.floor(notRedeemed / 9);
+    let remeeded = 0;
+    for (const item of _orders) {
+      if (toDisccount > 0 && toDisccount)
+        if (toDisccount <= item.quantity) {
+          invoice.total =
+            (invoice.total || 0) - toDisccount * (item.price || 1);
+          toDisccount = toDisccount - toDisccount;
+          remeeded = remeeded + toDisccount;
+        } else {
+          invoice.total =
+            (invoice.total || 0) - item.quantity * (item.price || 1);
+          toDisccount = toDisccount - item.quantity;
+          remeeded = remeeded + item.quantity;
+        }
+    }
+
     const resp = await invoices.create(invoice);
     if (!resp) throw new Error("No se pudo crear el pedido, intenta más tarde");
-    if (_orders) {
-      for (const order of _orders) {
-        order.id_invoice = resp.id;
-      }
-      respOrders = await orders.bulkCreate(_orders);
-    }
+    console.log("ordenes a guardar", _orders);
+    const respOrders = await createOrders(_orders, resp.id);
     resp.dataValues.orders = respOrders;
+
+    // Actualizamos todas las ordenes que quedan restantes
+    // await getAllOrdersAndUpdateWithParam(remeeded, invoice.created_by || 0);
     return resp.dataValues;
   } catch (error) {
     console.log("Error", error);
+    throw error;
+  }
+};
+export const getAllOrdersAndUpdateWithParam = async (
+  remeeded: number,
+  userId: number
+) => {
+  const { orders: orderList } = await getOrdersNotRemeeded(userId);
+  for (const item of orderList) {
+    if (remeeded > 0)
+      if (item.quantity <= remeeded) {
+        // Actualizamos solo la cantidad
+        item.quantity_disccount = item.quantity;
+        item.redeemed = 1;
+        remeeded = remeeded - item.quantity;
+      } else {
+        // Actualizamos los restantes
+        item.quantity_disccount = remeeded;
+        remeeded = 0;
+      }
+
+    await orders.update(item, {
+      where: {
+        idOrder: item.idOrder,
+      },
+    });
+  }
+  return orderList;
+};
+export const createOrders = async (
+  _orders: ordersAttributes[],
+  idInvoice: number
+) => {
+  for (const item of _orders) {
+    item.id_invoice = idInvoice;
+  }
+  return await orders.bulkCreate(_orders);
+};
+// Traemos las ordenes de esa persona que no hayan
+export const getOrdersNotRemeeded = async (userId: number) => {
+  try {
+    if (!userId)
+      throw { status: 400, message: "El id del usuario no puede ser 0" };
+    let notRedeemed = 0;
+    const _invoices: invoicesAttributes[] = await invoices.findAll({
+      where: {
+        created_by: userId,
+      },
+    });
+
+    const _orders = [];
+    for (const item of _invoices) {
+      const resp: ordersAttributes[] = await orders.findAll({
+        where: { redeemed: false, id_invoice: item.id },
+      });
+      if (resp.length) _orders.push(...resp);
+    }
+
+    for (const _order of _orders) {
+      notRedeemed = notRedeemed + _order.quantity;
+    }
+    return {
+      notRedeemed,
+      orders: _orders,
+      invoices: _invoices,
+    };
+  } catch (error) {
     throw error;
   }
 };
@@ -155,4 +249,17 @@ export const getLastInvoice = async (invoice: invoicesAttributes) => {
   } catch (error) {
     throw error;
   }
+};
+
+export const getCompaniesRegistered = async (userId: string) => {
+  const _invoices = await invoices.findAll({ where: { created_by: userId } });
+  const _companies: companiesAttributes[] = [];
+  for (const item of _invoices) {
+    const resp: companiesAttributes = (await companies.findOne({
+      where: { id: item.id_company },
+    })) as companiesAttributes;
+    if (resp && !_companies.find((x) => x.id === resp.id))
+      _companies.push({ id: resp.id, name: resp.name });
+  }
+  return _companies;
 };
