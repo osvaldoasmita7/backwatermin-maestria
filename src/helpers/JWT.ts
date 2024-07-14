@@ -57,7 +57,7 @@ export const renewToken = async (id: number): Promise<ILogin> => {
         active: user.active || 0,
         id: user.id || 0,
         username: user.username || "",
-        token: typeof token == "string" ? token : "" || "",
+        token: typeof token == "string" ? token : "",
         type_id: user.type_id || 0,
         companies: user.companies,
       },

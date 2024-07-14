@@ -31,7 +31,7 @@ export const createInvoice = async (
         if (toDisccount <= item.quantity) {
           invoice.total =
             (invoice.total || 0) - toDisccount * (item.price || 1);
-          toDisccount = toDisccount - toDisccount;
+          toDisccount = 0;
           remeeded = remeeded + toDisccount;
         } else {
           invoice.total =

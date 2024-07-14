@@ -34,7 +34,8 @@ export class ServerServer {
   }
 
   configurationSockets() {
-    new Sockets(this.io);
+    const nuevoSocket = new Sockets(this.io);
+    console.log(nuevoSocket);
   }
 
   middlewares() {
